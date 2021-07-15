@@ -1,7 +1,14 @@
 package com.demo.mybluetoothdemo.activity;
 
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -14,6 +21,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -73,6 +81,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     EditText edWriteOrder;
     @BindView(R.id.tv_receiver)
     TextView tvReceiver;
+    @BindView(R.id.ll_status_bluetooth)
+    LinearLayout llBlueStatus;
+    @BindView(R.id.ll_status_locatioin)
+    LinearLayout llLocationStatus;
+
 
     private List<BluetoothDevice> listDevice;
     private List<String> listDeviceName;
@@ -98,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 case 10:
                     //接收到数据，显示在界面上
                     dialog.dismiss();
-                    tvReceiver.append(msg.obj.toString());
+                    tvReceiver.append(msg.obj.toString() + "\n");
                     break;
                 case 1000:
                     regainBleDataCount = 0;
@@ -130,8 +143,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         ButterKnife.bind(this);
         EventBus.getDefault().register(this);
         initView();
-        scanBle();
+
+        checkDeviceSupport();
+        checkBluetoothStatus();
+        //添加一个关于权限判断的东西
+//        scanBle();
     }
+
 
     private void initView() {
         listDevice = new ArrayList<>();
@@ -172,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         });
     }
 
-    @OnClick({R.id.btn_scan, R.id.btn_send, R.id.btn_disconnect})
+    @OnClick({R.id.btn_scan, R.id.btn_send, R.id.btn_disconnect, R.id.tx_open_ble})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.btn_scan:
@@ -226,6 +244,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     Toast.makeText(MainActivity.this, "请连接蓝牙", Toast.LENGTH_SHORT).show();
                 }
                 break;
+
+            case R.id.tx_open_ble:
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, 1);
+                registerReceiver(broadcastReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
             default:
                 break;
         }
@@ -401,5 +424,38 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             return true;
         }
         return super.dispatchKeyEvent(event);
+    }
+
+    private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
+                checkBluetoothStatus();
+            }
+        }
+    };
+
+    //检测设备是否支持BLE
+    private void checkDeviceSupport() {
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            Toast.makeText(this, "设备不支持", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    }
+
+    //检测蓝牙状态
+    private void checkBluetoothStatus() {
+        if (BleConnectUtil.mBluetoothAdapter == null || !BleConnectUtil.mBluetoothAdapter.isEnabled()) {
+            llBlueStatus.setVisibility(View.VISIBLE);
+        } else {
+            llBlueStatus.setVisibility(View.GONE);
+            unregisterReceiver(broadcastReceiver);
+        }
+    }
+
+    //检测定位状态
+    private void checkLocationStats() {
+
     }
 }

@@ -13,8 +13,49 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="5dp"
-        android:visibility="gone"
-        android:text="您所连接的设备是：" />
+        android:text="您所连接的设备是："
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/ll_status_bluetooth"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="4"
+            android:text="蓝牙未打开" />
+
+        <TextView
+            android:id="@+id/tx_open_ble"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="开启" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_status_locatioin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="4"
+            android:text="定位状态" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="开启" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/btn_scan"
@@ -42,11 +83,13 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:text="断开连接" />
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="5dp"
         android:text="数据发送区域：" />
+
     <EditText
         android:id="@+id/ed_write_order"
         android:layout_width="match_parent"
