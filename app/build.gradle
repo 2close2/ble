@@ -1,0 +1,52 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 30
+    buildToolsVersion "28.0.2"
+    defaultConfig {
+        applicationId "com.whr.bledemo"
+        minSdkVersion 18
+        targetSdkVersion 30
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        ndk {
+            // 设置支持的SO库架构
+            abiFilters 'armeabi'
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    //noinspection GradleCompatible
+    implementation 'com.android.support:appcompat-v7:28.+'
+
+//    进度条的一个第三方库
+    implementation 'com.kaopiz:kprogresshud:1.0.1'
+    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+    testImplementation 'junit:junit:4.12'
+
+//    EventBus是一款针对Android优化的发布/订阅事件总线。
+//    主要功能是替代Intent,Handler,BroadCast在Fragment，Activity，Service，线程之间传递消息.
+//    优点是开销小，代码更优雅。以及将发送者和接收者解耦。
+//    https://blog.csdn.net/harvic880925/article/details/40660137
+    implementation 'org.greenrobot:eventbus:3.1.1'
+
+    // butterKnife 这个东西是用来简化安卓的控件绑定以及事件的
+    //https://github.com/JakeWharton/butterknife
+    implementation 'com.jakewharton:butterknife:8.8.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+
+}
