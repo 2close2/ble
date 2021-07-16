@@ -1,5 +1,6 @@
 package com.demo.mybluetoothdemo.activity;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -8,10 +9,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -97,6 +102,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     String currentRevice, currentSendOrder;
     byte[] sData = null;
 
+    //
+    private BLeBroadcastReceiver broadcastReceiver = new BLeBroadcastReceiver();
+    //
     /**
      * 跟ble通信的标志位,检测数据是否在指定时间内返回
      */
@@ -146,6 +154,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         checkDeviceSupport();
         checkBluetoothStatus();
+//        checkLocationStats();
         //添加一个关于权限判断的东西
 //        scanBle();
     }
@@ -190,7 +199,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         });
     }
 
-    @OnClick({R.id.btn_scan, R.id.btn_send, R.id.btn_disconnect, R.id.tx_open_ble})
+    @OnClick({R.id.btn_scan, R.id.btn_send, R.id.btn_disconnect, R.id.tx_open_ble, R.id.tx_open_location})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.btn_scan:
@@ -244,11 +253,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     Toast.makeText(MainActivity.this, "请连接蓝牙", Toast.LENGTH_SHORT).show();
                 }
                 break;
-
             case R.id.tx_open_ble:
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBtIntent, 1);
+                broadcastReceiver.setStatus(true);
                 registerReceiver(broadcastReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
+                break;
+            case R.id.tx_open_location:
+//                动态请求授权
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+//            请求打开软件的设置页面
+                Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                settingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                this.startActivity(settingsIntent);
+                break;
             default:
                 break;
         }
@@ -426,7 +444,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         return super.dispatchKeyEvent(event);
     }
 
-    private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+
+    private class BLeBroadcastReceiver extends BroadcastReceiver {
+        private boolean status = false;
+
+        public void setStatus(boolean status) {
+            this.status = status;
+        }
+
+        public boolean getStatus() {
+            return status;
+        }
+
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
@@ -434,7 +463,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 checkBluetoothStatus();
             }
         }
-    };
+    }
 
     //检测设备是否支持BLE
     private void checkDeviceSupport() {
@@ -450,12 +479,25 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             llBlueStatus.setVisibility(View.VISIBLE);
         } else {
             llBlueStatus.setVisibility(View.GONE);
-            unregisterReceiver(broadcastReceiver);
+            if (broadcastReceiver.getStatus() == true) {
+                unregisterReceiver(broadcastReceiver);
+                broadcastReceiver.setStatus(false);
+            }
         }
     }
 
     //检测定位状态
-    private void checkLocationStats() {
-
-    }
+//    private void checkLocationStats() {
+//        boolean a = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED;
+//        boolean b = !((LocationManager) (this.getSystemService(Context.LOCATION_SERVICE))).isProviderEnabled(LocationManager.GPS_PROVIDER);
+//
+//        Log.d("location","第一个"+a);
+//        Log.d("location","第二个"+b);
+//        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+//                || !((LocationManager) (this.getSystemService(Context.LOCATION_SERVICE))).isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+//            llLocationStatus.setVisibility(View.VISIBLE);
+//        } else {
+//            llLocationStatus.setVisibility(View.GONE);
+//        }
+//    }
 }
