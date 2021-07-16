@@ -10,11 +10,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
-import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -103,7 +103,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     byte[] sData = null;
 
     //
-    private BLeBroadcastReceiver broadcastReceiver = new BLeBroadcastReceiver();
+    private BLeBroadcastReceiver mBroadcastReceiver = new BLeBroadcastReceiver();
+    private LocationBroadcastReceiver mLocationBroadcastReceiver = new LocationBroadcastReceiver();
     //
     /**
      * 跟ble通信的标志位,检测数据是否在指定时间内返回
@@ -152,10 +153,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         EventBus.getDefault().register(this);
         initView();
 
+        mLocationBroadcastReceiver.setStatus(true);
+        registerReceiver(mLocationBroadcastReceiver, new IntentFilter("android.location.PROVIDERS_CHANGED"));
+        mBroadcastReceiver.setStatus(true);
+        registerReceiver(mBroadcastReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
+
         checkDeviceSupport();
         checkBluetoothStatus();
-//        checkLocationStats();
-        //添加一个关于权限判断的东西
+        checkLocationStats();
+//        //添加一个关于权限判断的东西
 //        scanBle();
     }
 
@@ -203,7 +209,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.btn_scan:
-                listview.setVisibility(View.VISIBLE);
+                if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                    listview.setVisibility(View.VISIBLE);
+                    return;
+                }
                 String scanStr = btnScan.getText().toString().trim();
                 switch (scanStr) {
                     case "开始扫描":
@@ -256,12 +266,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             case R.id.tx_open_ble:
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBtIntent, 1);
-                broadcastReceiver.setStatus(true);
-                registerReceiver(broadcastReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
                 break;
             case R.id.tx_open_location:
-//                动态请求授权
-                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
 //            请求打开软件的设置页面
                 Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 settingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -458,10 +464,24 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
-                checkBluetoothStatus();
-            }
+            checkBluetoothStatus();
+        }
+    }
+
+    private class LocationBroadcastReceiver extends BroadcastReceiver {
+        private boolean status = false;
+
+        public void setStatus(boolean status) {
+            this.status = status;
+        }
+
+        public boolean getStatus() {
+            return status;
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            checkLocationStats();
         }
     }
 
@@ -479,25 +499,36 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             llBlueStatus.setVisibility(View.VISIBLE);
         } else {
             llBlueStatus.setVisibility(View.GONE);
-            if (broadcastReceiver.getStatus() == true) {
-                unregisterReceiver(broadcastReceiver);
-                broadcastReceiver.setStatus(false);
+            if (mBroadcastReceiver.getStatus() == true) {
+                unregisterReceiver(mBroadcastReceiver);
+                mBroadcastReceiver.setStatus(false);
             }
         }
     }
 
-    //检测定位状态
-//    private void checkLocationStats() {
-//        boolean a = ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED;
-//        boolean b = !((LocationManager) (this.getSystemService(Context.LOCATION_SERVICE))).isProviderEnabled(LocationManager.GPS_PROVIDER);
-//
-//        Log.d("location","第一个"+a);
-//        Log.d("location","第二个"+b);
-//        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-//                || !((LocationManager) (this.getSystemService(Context.LOCATION_SERVICE))).isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-//            llLocationStatus.setVisibility(View.VISIBLE);
-//        } else {
-//            llLocationStatus.setVisibility(View.GONE);
-//        }
-//    }
+    //    检测定位状态
+    private void checkLocationStats() {
+        if (!((LocationManager) (this.getSystemService(Context.LOCATION_SERVICE))).isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            llLocationStatus.setVisibility(View.VISIBLE);
+        } else {
+            llLocationStatus.setVisibility(View.GONE);
+            if (mLocationBroadcastReceiver.getStatus() == true) {
+                unregisterReceiver(mLocationBroadcastReceiver);
+                mLocationBroadcastReceiver.setStatus(false);
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                llLocationStatus.setVisibility(View.GONE);
+                onViewClicked(findViewById(R.id.btn_scan));
+            } else {
+                Toast.makeText(this, "拒绝将导致软件无法运行", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
 }
