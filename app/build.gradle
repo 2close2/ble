@@ -49,4 +49,7 @@ dependencies {
     implementation 'com.jakewharton:butterknife:8.8.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
 
+    //QRcode
+    implementation 'com.github.jenly1314:zxing-lite:2.1.0'
+
 }
