@@ -62,14 +62,33 @@
         android:id="@+id/btn_scan"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="开始扫描" />
+        android:text="开始扫描"
+        android:visibility="gone" />
 
 
     <ListView
         android:id="@+id/listview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="visible"></ListView>
+        android:visibility="gone"></ListView>
+
+    <Button
+        android:id="@+id/btn_scanQR"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="扫描二维码" />
+
+    <TextView
+        android:id="@+id/tx_address"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/bt_conn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="连接电表" />
 
     <Button
         android:id="@+id/btn_send"
@@ -77,6 +96,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:text="发送" />
+
 
     <Button
         android:id="@+id/btn_disconnect"

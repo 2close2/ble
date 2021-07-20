@@ -39,6 +39,7 @@ import com.demo.mybluetoothdemo.utils.CheckUtils;
 import com.demo.mybluetoothdemo.utils.Constants;
 import com.demo.mybluetoothdemo.utils.bleutils.BleConnectUtil;
 import com.kaopiz.kprogresshud.KProgressHUD;
+import com.king.zxing.CaptureActivity;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -52,6 +53,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 import static com.demo.mybluetoothdemo.utils.bleutils.BleConnectUtil.mBluetoothGattCharacteristic;
+import static com.king.zxing.CaptureFragment.KEY_RESULT;
 
 
 /**
@@ -74,6 +76,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private static final String TAG = "MainActivity";
     @BindView(R.id.btn_scan)
     Button btnScan;
+    @BindView(R.id.btn_scanQR)
+    Button btnScanQR;
     @BindView(R.id.tv_ble_name)
     TextView tvBleName;
     @BindView(R.id.listview)
@@ -102,10 +106,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     String currentRevice, currentSendOrder;
     byte[] sData = null;
 
-    //
+    // 广播
     private BLeBroadcastReceiver mBroadcastReceiver = new BLeBroadcastReceiver();
     private LocationBroadcastReceiver mLocationBroadcastReceiver = new LocationBroadcastReceiver();
-    //
+
+    //requestCode
+    private final int requestCodeBluetooth = 1, requestCodeCamera = 2, requestCodeQR = 3;
+
     /**
      * 跟ble通信的标志位,检测数据是否在指定时间内返回
      */
@@ -161,8 +168,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         checkDeviceSupport();
         checkBluetoothStatus();
         checkLocationStats();
-//        //添加一个关于权限判断的东西
-//        scanBle();
+
     }
 
 
@@ -205,12 +211,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         });
     }
 
-    @OnClick({R.id.btn_scan, R.id.btn_send, R.id.btn_disconnect, R.id.tx_open_ble, R.id.tx_open_location})
+    @OnClick({R.id.btn_scan, R.id.btn_send, R.id.btn_disconnect, R.id.tx_open_ble, R.id.tx_open_location, R.id.btn_scanQR, R.id.bt_conn})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.btn_scan:
+                //扫描附近蓝牙设备列表的按钮
                 if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, requestCodeBluetooth);
                     listview.setVisibility(View.VISIBLE);
                     return;
                 }
@@ -231,9 +238,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     default:
                         break;
                 }
-
                 break;
             case R.id.btn_send:
+                //发送16进制数据
                 if (bleConnectUtil.isConnected()) {
                     currentSendOrder = edWriteOrder.getText().toString().trim();
                     if (!TextUtils.isEmpty(currentSendOrder)) {
@@ -257,6 +264,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                 break;
             case R.id.btn_disconnect:
+                //断开链接
                 if (bleConnectUtil.isConnected()) {
                     handler.sendEmptyMessage(1111);
                 } else {
@@ -264,6 +272,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
                 break;
             case R.id.tx_open_ble:
+                //打开蓝牙
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBtIntent, 1);
                 break;
@@ -272,6 +281,22 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 settingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 this.startActivity(settingsIntent);
+                break;
+            case R.id.btn_scanQR:
+//                获取摄像头权限
+                if (ContextCompat.checkSelfPermission(MainActivity.this,
+                        android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{android.Manifest.permission.CAMERA}, requestCodeCamera);
+                    return;
+                }
+                Intent intent = new Intent(this, CaptureActivity.class);
+                startActivityForResult(intent, requestCodeQR);
+                break;
+            case R.id.bt_conn:
+                //链接电表
+                bleConnectUtil.stopScan();
+                dialog.show();
+                bleConnectUtil.connectBle("C0:1C:BE:93:D8:1C");
                 break;
             default:
                 break;
@@ -292,7 +317,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 if (bleConnectUtil.isConnected()) {
                     Toast.makeText(MainActivity.this, "连接成功", Toast.LENGTH_SHORT).show();
                     tvBleName.setVisibility(View.VISIBLE);
-                    tvBleName.setText("您所连接的设备是:" + listDeviceName.get(selectPos));
+//                    tvBleName.setText("您所连接的设备是:" + listDeviceName.get(selectPos));
                     listview.setVisibility(View.GONE);
                     bleConnectUtil.setCallback(blecallback);
                 } else {
@@ -429,6 +454,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             bleConnectUtil.disConnect();
         }
         EventBus.getDefault().unregister(this);
+
+        //
+        if (mLocationBroadcastReceiver.getStatus() == true) {
+            unregisterReceiver(mLocationBroadcastReceiver);
+            mLocationBroadcastReceiver.setStatus(false);
+        }
+        if (mBroadcastReceiver.getStatus() == true) {
+            unregisterReceiver(mBroadcastReceiver);
+            mBroadcastReceiver.setStatus(false);
+        }
     }
 
 
@@ -522,12 +557,33 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 1) {
+        if (requestCode == requestCodeBluetooth) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 llLocationStatus.setVisibility(View.GONE);
                 onViewClicked(findViewById(R.id.btn_scan));
             } else {
                 Toast.makeText(this, "拒绝将导致软件无法运行", Toast.LENGTH_LONG).show();
+            }
+        } else if (requestCode == requestCodeCamera) {
+            onViewClicked(findViewById(R.id.btn_scanQR));
+        }
+    }
+
+    /**
+     * 在该方法中拿到扫描的数据
+     *
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == requestCodeQR) {
+                String result = data.getStringExtra(KEY_RESULT);
+                Log.e("aaa", "resu-->" + result);
+                ((TextView) findViewById(R.id.tx_address)).setText("" + result);
             }
         }
     }

@@ -71,7 +71,7 @@ public class BleConnectUtil {
         notifyCharactUuid = "6e400003-b5a3-f393-e0a9-e50e24dc4179";
 //        notifyCharactUuid = "0000fff7-0000-1000-8000-00805f9b34fb";
 
-	
+
         mBluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoothAdapter = mBluetoothManager.getAdapter();
         mConnected = false;
@@ -135,6 +135,13 @@ public class BleConnectUtil {
     public void connectBle(BluetoothDevice device) {
         //获取所需地址
         mDeviceAddress = device.getAddress();
+        Log.e(TAG, "connectBle: " + mDeviceAddress);
+        new connectThread().start();
+    }
+
+    public void connectBle(String device) {
+        //获取所需地址
+        mDeviceAddress = device;
         Log.e(TAG, "connectBle: " + mDeviceAddress);
         new connectThread().start();
     }
@@ -386,10 +393,10 @@ public class BleConnectUtil {
         public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
             super.onMtuChanged(gatt, mtu, status);
             if (BluetoothGatt.GATT_SUCCESS == status) {
-                Log.d("mut","ok");
+                Log.d("mut", "ok");
             } else {
 //                LogHelper.log("onMtuChanged fail ");
-                Log.d("mut","不ok");
+                Log.d("mut", "不ok");
             }
             mBluetoothGatt.discoverServices();
         }
@@ -403,9 +410,9 @@ public class BleConnectUtil {
         //遍历所有服务
         for (BluetoothGattService BluetoothGattService : gatt.getServices()) {
             Log.e(TAG, "--->BluetoothGattService" + BluetoothGattService.getUuid().toString());
-            
-			//遍历所有特征
-			for (BluetoothGattCharacteristic bluetoothGattCharacteristic : BluetoothGattService.getCharacteristics()) {
+
+            //遍历所有特征
+            for (BluetoothGattCharacteristic bluetoothGattCharacteristic : BluetoothGattService.getCharacteristics()) {
                 Log.e("---->gattCharacteristic", bluetoothGattCharacteristic.getUuid().toString());
 
                 String str = bluetoothGattCharacteristic.getUuid().toString();
