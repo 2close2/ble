@@ -296,7 +296,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 //链接电表
                 bleConnectUtil.stopScan();
                 dialog.show();
-                bleConnectUtil.connectBle("C0:1C:BE:93:D8:1C");
+                String a = ((TextView) findViewById(R.id.tx_address)).getText().toString();
+                bleConnectUtil.connectBle(a);
+//                bleConnectUtil.connectBle("C0:1C:BE:93:D8:1C");
                 break;
             default:
                 break;
