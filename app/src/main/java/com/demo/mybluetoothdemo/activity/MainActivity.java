@@ -317,7 +317,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 //链接电表
                 bleConnectUtil.stopScan();
                 dialog.show();
-                String a = ((TextView) findViewById(R.id.tx_address)).getText().toString();
+//                String a = ((TextView) findViewById(R.id.tx_address)).getText().toString();
+                String a = tvBleName.getText().toString();
                 bleConnectUtil.connectBle(a);
 //                bleConnectUtil.connectBle("C0:1C:BE:93:D8:1C");
                 break;
@@ -336,6 +337,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     ass = aaa1.toString();
                 }
 
+                //
                 //
                 tvBleName.setText(ass);
                 break;
@@ -625,6 +627,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             if (requestCode == requestCodeQR) {
                 String result = data.getStringExtra(KEY_RESULT);
                 Log.e("aaa", "resu-->" + result);
+                tvBleName.setText("" + result);
                 ((TextView) findViewById(R.id.tx_address)).setText("" + result);
             }
         }
