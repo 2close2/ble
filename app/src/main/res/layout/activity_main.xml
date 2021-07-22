@@ -13,15 +13,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="5dp"
-        android:text="您所连接的设备是："
-        android:visibility="gone" />
+        android:text="您所连接的设备是：" />
 
     <LinearLayout
         android:id="@+id/ll_status_bluetooth"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:visibility="gone">
+        android:orientation="horizontal">
 
         <TextView
             android:layout_width="0dp"
@@ -41,8 +39,7 @@
         android:id="@+id/ll_status_locatioin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:visibility="gone">
+        android:orientation="horizontal">
 
         <TextView
             android:layout_width="0dp"
@@ -58,19 +55,25 @@
             android:text="开启" />
     </LinearLayout>
 
-    <Button
-        android:id="@+id/btn_scan"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="开始扫描"
-        android:visibility="gone" />
+        android:orientation="horizontal">
 
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="3"
+            android:text="手动输入电表表地址" />
 
-    <ListView
-        android:id="@+id/listview"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone"></ListView>
+        <Switch
+            android:id="@+id/sw"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:textOff="开"
+            android:textOn="关" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/btn_scanQR"
@@ -78,6 +81,29 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:text="扫描二维码" />
+
+    <LinearLayout
+        android:id="@+id/inputAddress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <EditText
+            android:id="@+id/tx_input_address"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="4"
+            android:inputType="number"
+            android:maxLength="12" />
+
+        <Button
+            android:id="@+id/bt_input_address"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="确认" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/tx_address"
@@ -132,4 +158,17 @@
         android:padding="5dp"
         android:text="" />
 
+    <!--以下无用-->
+    <Button
+        android:id="@+id/btn_scan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="开始扫描"
+        android:visibility="gone" />
+
+    <ListView
+        android:id="@+id/listview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"></ListView>
 </LinearLayout>

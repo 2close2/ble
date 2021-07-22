@@ -25,9 +25,11 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,6 +52,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnCheckedChanged;
 import butterknife.OnClick;
 
 import static com.demo.mybluetoothdemo.utils.bleutils.BleConnectUtil.mBluetoothGattCharacteristic;
@@ -94,6 +97,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     LinearLayout llBlueStatus;
     @BindView(R.id.ll_status_locatioin)
     LinearLayout llLocationStatus;
+    @BindView(R.id.sw)
+    Switch sw;
+    @BindView(R.id.bt_input_address)
+    Button btnAddress;
 
 
     private List<BluetoothDevice> listDevice;
@@ -169,6 +176,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         checkBluetoothStatus();
         checkLocationStats();
 
+        sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    Log.d("开关", "is");
+                    btnScanQR.setVisibility(View.GONE);
+                    ((LinearLayout) (findViewById(R.id.inputAddress))).setVisibility(View.VISIBLE);
+                } else {
+                    Log.d("开关", "不is");
+                    btnScanQR.setVisibility(View.VISIBLE);
+                    ((LinearLayout) (findViewById(R.id.inputAddress))).setVisibility(View.GONE);
+                }
+            }
+        });
     }
 
 
@@ -211,7 +232,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         });
     }
 
-    @OnClick({R.id.btn_scan, R.id.btn_send, R.id.btn_disconnect, R.id.tx_open_ble, R.id.tx_open_location, R.id.btn_scanQR, R.id.bt_conn})
+    @OnClick({R.id.btn_scan, R.id.btn_send, R.id.btn_disconnect, R.id.tx_open_ble, R.id.tx_open_location, R.id.btn_scanQR, R.id.bt_conn, R.id.bt_input_address})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.btn_scan:
@@ -300,10 +321,29 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 bleConnectUtil.connectBle(a);
 //                bleConnectUtil.connectBle("C0:1C:BE:93:D8:1C");
                 break;
+            case R.id.bt_input_address:
+                String ass = ((TextView) findViewById(R.id.tx_input_address)).getText().toString().trim();
+                long aaa = Long.parseLong(ass);
+//                ass = (Long.toHexString(aaa)).toUpperCase();
+                ass = "C0:" + String.format("%010x", aaa);
+
+                StringBuffer aaa1 = new StringBuffer(ass.toUpperCase());
+                //关于添加封号的部分
+                while ((ass.split(":").length - 1) != 5) {
+                    int adf = ass.lastIndexOf(":") + 3;
+//                    ass = ass.
+                    aaa1.insert(adf, ":");
+                    ass = aaa1.toString();
+                }
+
+                //
+                tvBleName.setText(ass);
+                break;
             default:
                 break;
         }
     }
+
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEvent(EventMsg eventMsg) {
