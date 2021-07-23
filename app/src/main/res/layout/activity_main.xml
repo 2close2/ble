@@ -158,17 +158,4 @@
         android:padding="5dp"
         android:text="" />
 
-    <!--以下无用-->
-    <Button
-        android:id="@+id/btn_scan"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="开始扫描"
-        android:visibility="gone" />
-
-    <ListView
-        android:id="@+id/listview"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone"></ListView>
 </LinearLayout>

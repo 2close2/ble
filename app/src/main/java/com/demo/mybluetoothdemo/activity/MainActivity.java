@@ -77,14 +77,10 @@ import static com.king.zxing.CaptureFragment.KEY_RESULT;
  */
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
     private static final String TAG = "MainActivity";
-    @BindView(R.id.btn_scan)
-    Button btnScan;
     @BindView(R.id.btn_scanQR)
     Button btnScanQR;
     @BindView(R.id.tv_ble_name)
     TextView tvBleName;
-    @BindView(R.id.listview)
-    ListView listview;
     @BindView(R.id.btn_send)
     Button btnSend;
     @BindView(R.id.btn_disconnect)
@@ -106,6 +102,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private List<BluetoothDevice> listDevice;
     private List<String> listDeviceName;
     private ArrayAdapter<String> adapter;
+
+    private static int index;
+    private List<String> cmd;
 
     private int selectPos;
     private KProgressHUD dialog;
@@ -135,6 +134,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     //接收到数据，显示在界面上
                     dialog.dismiss();
                     tvReceiver.append(msg.obj.toString() + "\n");
+                    if (index < (cmd.size() - 1)) {
+                        index++;
+                        sendDataByBle(index, "");
+                    }
                     break;
                 case 1000:
                     regainBleDataCount = 0;
@@ -196,12 +199,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void initView() {
         listDevice = new ArrayList<>();
         listDeviceName = new ArrayList<>();
-
         bleConnectUtil = new BleConnectUtil(MainActivity.this);
-        listview.setVisibility(View.VISIBLE);
         adapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_list_item_1, listDeviceName);
-        listview.setAdapter(adapter);
-        listview.setOnItemClickListener(this);
 
         dialog = CheckUtils.showDialog(MainActivity.this);
     }
@@ -232,38 +231,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         });
     }
 
-    @OnClick({R.id.btn_scan, R.id.btn_send, R.id.btn_disconnect, R.id.tx_open_ble, R.id.tx_open_location, R.id.btn_scanQR, R.id.bt_conn, R.id.bt_input_address})
+    @OnClick({R.id.btn_send, R.id.btn_disconnect, R.id.tx_open_ble, R.id.tx_open_location, R.id.btn_scanQR, R.id.bt_conn, R.id.bt_input_address})
     public void onViewClicked(View view) {
         switch (view.getId()) {
-            case R.id.btn_scan:
-                //扫描附近蓝牙设备列表的按钮
-                if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, requestCodeBluetooth);
-                    listview.setVisibility(View.VISIBLE);
-                    return;
-                }
-                String scanStr = btnScan.getText().toString().trim();
-                switch (scanStr) {
-                    case "开始扫描":
-                        listDevice.clear();
-                        listDeviceName.clear();
-                        adapter.notifyDataSetChanged();
-                        listview.setVisibility(View.VISIBLE);
-                        scanBle();
-                        btnScan.setText("停止扫描");
-                        break;
-                    case "停止扫描":
-                        bleConnectUtil.stopScan();
-                        btnScan.setText("开始扫描");
-                        break;
-                    default:
-                        break;
-                }
-                break;
             case R.id.btn_send:
                 //发送16进制数据
                 if (bleConnectUtil.isConnected()) {
-                    currentSendOrder = edWriteOrder.getText().toString().trim();
+                    cmd = new ArrayList<String>();
+                    cmd.add("68aaaaaaaaaaaa68110434343337b316");
+                    cmd.add("68aaaaaaaaaaaa68110435343337b416");
+                    index = 0;
+//                    currentSendOrder = "68aaaaaaaaaaaa68110434343337b316";
+//                    currentSendOrder = edWriteOrder.getText().toString().trim();
+                    currentSendOrder = "11";
                     if (!TextUtils.isEmpty(currentSendOrder)) {
                         if (CheckUtils.isHexNum(currentSendOrder)) {
                             dialog.show();
@@ -271,7 +251,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                             regainBleDataCount = 0;
                             currentRevice = "";
 
-                            sendDataByBle(currentSendOrder, "");
+                            sendDataByBle(index, "");
                             handler.postDelayed(checkConnetRunnable, 3000);
                         } else {
                             Toast.makeText(MainActivity.this, "请输入十六进制指令", Toast.LENGTH_SHORT).show();
@@ -317,28 +297,22 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 //链接电表
                 bleConnectUtil.stopScan();
                 dialog.show();
-//                String a = ((TextView) findViewById(R.id.tx_address)).getText().toString();
                 String a = tvBleName.getText().toString();
                 bleConnectUtil.connectBle(a);
-//                bleConnectUtil.connectBle("C0:1C:BE:93:D8:1C");
                 break;
             case R.id.bt_input_address:
                 String ass = ((TextView) findViewById(R.id.tx_input_address)).getText().toString().trim();
                 long aaa = Long.parseLong(ass);
-//                ass = (Long.toHexString(aaa)).toUpperCase();
                 ass = "C0:" + String.format("%010x", aaa);
 
                 StringBuffer aaa1 = new StringBuffer(ass.toUpperCase());
-                //关于添加封号的部分
+                //关于添加分号的部分
                 while ((ass.split(":").length - 1) != 5) {
                     int adf = ass.lastIndexOf(":") + 3;
-//                    ass = ass.
                     aaa1.insert(adf, ":");
                     ass = aaa1.toString();
                 }
 
-                //
-                //
                 tvBleName.setText(ass);
                 break;
             default:
@@ -356,13 +330,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     dialog.dismiss();
                 }
                 bleConnectUtil.stopScan();
-                btnScan.setText("开始扫描");
+
 
                 if (bleConnectUtil.isConnected()) {
                     Toast.makeText(MainActivity.this, "连接成功", Toast.LENGTH_SHORT).show();
                     tvBleName.setVisibility(View.VISIBLE);
 //                    tvBleName.setText("您所连接的设备是:" + listDeviceName.get(selectPos));
-                    listview.setVisibility(View.GONE);
                     bleConnectUtil.setCallback(blecallback);
                 } else {
                     Toast.makeText(MainActivity.this, "连接失败", Toast.LENGTH_SHORT).show();
@@ -427,7 +400,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             currentSendOrder = currentSendAllOrder;
             final boolean[] isSuccess = new boolean[1];
             //sd
-            if (currentSendAllOrder.length() <= 100) {
+            if (currentSendAllOrder.length() <= 200) {
                 sData = CheckUtils.hex2byte(currentSendOrder);
                 mBluetoothGattCharacteristic.setValue(sData);
                 isSuccess[0] = bleConnectUtil.sendData(mBluetoothGattCharacteristic);
@@ -459,6 +432,33 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
             }, (currentSendAllOrder.length() / 40 + 1) * 15);
         }
+    }
+
+    private void sendDataByBle(int i, String title) {
+
+        if (!title.equals("")) {
+//                showDialog(title);
+            Log.d("查封", title);
+        }
+        currentSendOrder = (String) cmd.get(i);
+        final boolean[] isSuccess = new boolean[1];
+        //sd
+
+        sData = CheckUtils.hex2byte(currentSendOrder);
+        mBluetoothGattCharacteristic.setValue(sData);
+        isSuccess[0] = bleConnectUtil.sendData(mBluetoothGattCharacteristic);
+
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!isSuccess[0]) {
+                    dialog.dismiss();
+                    handler.sendEmptyMessage(1111);
+                }
+                Log.e("--->", "是否发送成功：" + isSuccess[0]);
+            }
+        }, (currentSendOrder.length() / 40 + 1) * 20);
+
     }
 
     /**
@@ -604,7 +604,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         if (requestCode == requestCodeBluetooth) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 llLocationStatus.setVisibility(View.GONE);
-                onViewClicked(findViewById(R.id.btn_scan));
             } else {
                 Toast.makeText(this, "拒绝将导致软件无法运行", Toast.LENGTH_LONG).show();
             }
