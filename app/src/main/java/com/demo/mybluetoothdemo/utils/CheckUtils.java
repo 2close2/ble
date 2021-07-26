@@ -1,7 +1,9 @@
 package com.demo.mybluetoothdemo.utils;
 
 import android.content.Context;
+
 import com.kaopiz.kprogresshud.KProgressHUD;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,5 +56,39 @@ public class CheckUtils {
         Pattern pattern = Pattern.compile("^[A-Fa-f0-9]+$");
         Matcher mc = pattern.matcher(data);
         return mc.matches();
+    }
+
+    /**
+     * 输入正常12位的地址数据，然后返回两两倒叙的字符串地址
+     */
+    public static String getMeterAddress(String data) {
+        String meterAddress = "";
+        for (int i = 10; i >= 0; i -= 2) {
+            meterAddress += data.substring(i, i + 2);
+        }
+        return meterAddress;
+    }
+
+    /**
+     * 将表地址转换为MAC地址,然后添加冒号分隔符
+     */
+    public static String getMacAddress(String data) {
+        StringBuffer macAddress = new StringBuffer(data);
+        int index;
+        while ((data.split(":").length - 1) != 5) {
+            index = data.lastIndexOf(":") + 3;
+            macAddress.insert(index, ":");
+            data = macAddress.toString();
+        }
+        return macAddress.toString();
+    }
+
+    /**
+     * MAC地址转化表地址
+     */
+    public static String Mac2MeterAddress(String data) {
+        data = data.replace(":", "").replace("C0", "");
+        long num = Long.parseLong(data,16);
+        return getMeterAddress(String.format("%012d", num));
     }
 }

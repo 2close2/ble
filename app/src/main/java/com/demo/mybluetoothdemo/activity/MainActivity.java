@@ -71,8 +71,8 @@ import static com.king.zxing.CaptureFragment.KEY_RESULT;
  * <p>
  * PS:请修改 BleConnectUtil.java文件中serviceUuidStr、writeCharactUuid以及notifyCharactUuid这三个变量值，确保与您设备的uuid相同才可通讯。
  *
- * @author wangheru
- * @version 1.0.3
+ * @author mokojo
+ * @version 1.0.4
  * @date 2020/6/3
  */
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
@@ -118,6 +118,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     //requestCode
     private final int requestCodeBluetooth = 1, requestCodeCamera = 2, requestCodeQR = 3;
+
+    //表地址
+    private String meterAddress;
 
     /**
      * 跟ble通信的标志位,检测数据是否在指定时间内返回
@@ -301,19 +304,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 bleConnectUtil.connectBle(a);
                 break;
             case R.id.bt_input_address:
-                String ass = ((TextView) findViewById(R.id.tx_input_address)).getText().toString().trim();
-                long aaa = Long.parseLong(ass);
-                ass = "C0:" + String.format("%010x", aaa);
+                //接收输入的表地址
+                String rowAddress = ((TextView) findViewById(R.id.tx_input_address)).getText().toString().trim();
+                if (rowAddress.length() == 0) return;
 
-                StringBuffer aaa1 = new StringBuffer(ass.toUpperCase());
-                //关于添加分号的部分
-                while ((ass.split(":").length - 1) != 5) {
-                    int adf = ass.lastIndexOf(":") + 3;
-                    aaa1.insert(adf, ":");
-                    ass = aaa1.toString();
-                }
+                long aaa = Long.parseLong(rowAddress);
+                //表地址倒叙
+                meterAddress = CheckUtils.getMeterAddress(String.format("%012d", aaa));
+                //对应的MAC地址
+                String macAddress = CheckUtils.getMacAddress(("C0:" + String.format("%010x", aaa)).toUpperCase());
 
-                tvBleName.setText(ass);
+                tvBleName.setText(macAddress);
                 break;
             default:
                 break;
@@ -625,7 +626,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         if (resultCode == RESULT_OK) {
             if (requestCode == requestCodeQR) {
                 String result = data.getStringExtra(KEY_RESULT);
+                if (!result.contains("C0")) return;
                 Log.e("aaa", "resu-->" + result);
+                Log.e("aaa", "9999-->" + CheckUtils.Mac2MeterAddress(result));
+                meterAddress = CheckUtils.Mac2MeterAddress(result);
                 tvBleName.setText("" + result);
                 ((TextView) findViewById(R.id.tx_address)).setText("" + result);
             }
