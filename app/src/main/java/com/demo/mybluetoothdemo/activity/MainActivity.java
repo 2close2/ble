@@ -241,12 +241,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 //发送16进制数据
                 if (bleConnectUtil.isConnected()) {
                     cmd = new ArrayList<String>();
-                    cmd.add("68aaaaaaaaaaaa68110434343337");
-                    cmd.add("68AAAAAAAAAAAA68110435343337");
+                    cmd.add("110434343337");
+                    cmd.add("110435343337");
                     index = 0;
-//                    currentSendOrder = "68aaaaaaaaaaaa68110434343337b316";
-//                    currentSendOrder = edWriteOrder.getText().toString().trim();
-                    currentSendOrder = "11";
+                    currentSendOrder = "11";//随便大的
                     if (!TextUtils.isEmpty(currentSendOrder)) {
                         if (CheckUtils.isHexNum(currentSendOrder)) {
                             dialog.show();
@@ -311,6 +309,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 long aaa = Long.parseLong(rowAddress);
                 //表地址倒叙
                 meterAddress = CheckUtils.getMeterAddress(String.format("%012d", aaa));
+                CheckUtils.setAddrss(meterAddress);
                 //对应的MAC地址
                 String macAddress = CheckUtils.getMacAddress(("C0:" + String.format("%010x", aaa)).toUpperCase());
 
@@ -441,7 +440,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //                showDialog(title);
             Log.d("查封", title);
         }
-        currentSendOrder = (String) cmd.get(i) + CheckUtils.checkSum((String) cmd.get(i)) + "16";
+        currentSendOrder = CheckUtils.getFullData((String) cmd.get(i));
+//        currentSendOrder = (String) cmd.get(i) + CheckUtils.checkSum((String) cmd.get(i)) + "16";
         final boolean[] isSuccess = new boolean[1];
         //sd
 
@@ -630,6 +630,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Log.e("aaa", "resu-->" + result);
                 Log.e("aaa", "9999-->" + CheckUtils.Mac2MeterAddress(result));
                 meterAddress = CheckUtils.Mac2MeterAddress(result);
+                CheckUtils.setAddrss(meterAddress);
                 tvBleName.setText("" + result);
                 ((TextView) findViewById(R.id.tx_address)).setText("" + result);
             }

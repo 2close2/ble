@@ -12,6 +12,12 @@ import java.util.regex.Pattern;
  */
 
 public class CheckUtils {
+    private static String ADDRESS;
+
+    public static void setAddrss(String addrss) {
+        ADDRESS = "68" + addrss.toUpperCase() + 68;
+    }
+
     public static KProgressHUD showDialog(Context context) {
         KProgressHUD dialog = KProgressHUD.create(context)
                 .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE)
@@ -112,4 +118,8 @@ public class CheckUtils {
         return String.format("%02x", res).toUpperCase();
     }
 
+    public static String getFullData(String data) {
+        data = ADDRESS + data;
+        return data + checkSum(data) + "16";//地址+数据+cs+16
+    }
 }
