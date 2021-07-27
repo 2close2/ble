@@ -241,8 +241,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 //发送16进制数据
                 if (bleConnectUtil.isConnected()) {
                     cmd = new ArrayList<String>();
-                    cmd.add("68aaaaaaaaaaaa68110434343337b316");
-                    cmd.add("68aaaaaaaaaaaa68110435343337b416");
+                    cmd.add("68aaaaaaaaaaaa68110434343337");
+                    cmd.add("68AAAAAAAAAAAA68110435343337");
                     index = 0;
 //                    currentSendOrder = "68aaaaaaaaaaaa68110434343337b316";
 //                    currentSendOrder = edWriteOrder.getText().toString().trim();
@@ -441,7 +441,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //                showDialog(title);
             Log.d("查封", title);
         }
-        currentSendOrder = (String) cmd.get(i);
+        currentSendOrder = (String) cmd.get(i) + CheckUtils.checkSum((String) cmd.get(i)) + "16";
         final boolean[] isSuccess = new boolean[1];
         //sd
 

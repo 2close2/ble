@@ -88,7 +88,28 @@ public class CheckUtils {
      */
     public static String Mac2MeterAddress(String data) {
         data = data.replace(":", "").replace("C0", "");
-        long num = Long.parseLong(data,16);
+        long num = Long.parseLong(data, 16);
         return getMeterAddress(String.format("%012d", num));
     }
+
+
+    /**
+     * 将前面的字符串算出和校验
+     */
+    public static String checkSum(String data) {
+        byte[] nums = hex2byte(data);
+        int res = 0;
+        for (byte num : nums) {
+            if (num >= 0) {
+                res += num;
+            } else {
+                res += num + 256;
+            }
+            if (res >= 256) {
+                res -= 256;
+            }
+        }
+        return String.format("%02x", res).toUpperCase();
+    }
+
 }
