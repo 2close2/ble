@@ -273,7 +273,7 @@ public class BleConnectUtil {
                 }
 //                mBluetoothGatt.discoverServices();
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    mBluetoothGatt.requestMtu(50);
+                    mBluetoothGatt.requestMtu(250);
                 }
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.d(TAG, "连接断开");
