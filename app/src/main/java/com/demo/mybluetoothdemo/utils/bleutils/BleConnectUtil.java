@@ -304,6 +304,7 @@ public class BleConnectUtil {
             }
         }
 
+        //接收函数
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
@@ -543,7 +544,7 @@ public class BleConnectUtil {
         initTimeFlag(WORK_onCharacteristicChanged);
 
         mBluetoothGatt.setCharacteristicNotification(data_char, true);
-        mBluetoothGatt.writeCharacteristic(data_char);
+        mBluetoothGatt.writeCharacteristic(data_char);//真正的写数据
 
         if (startTimeOut(milsec)) {
             System.out.println("startTimeOut");
@@ -577,7 +578,7 @@ public class BleConnectUtil {
         }
         if (mBluetoothGatt != null) {
             mBluetoothGatt.setCharacteristicNotification(data_char, true);
-            mBluetoothGatt.writeCharacteristic(data_char);
+            mBluetoothGatt.writeCharacteristic(data_char);//真正的写数据
         } else {
             return false;
         }
