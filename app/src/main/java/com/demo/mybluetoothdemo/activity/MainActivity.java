@@ -132,16 +132,17 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            Log.d("数据帧", "" + msg.what);
+            Log.d("数据帧", "Main-->" + msg.what);
             switch (msg.what) {
                 case 10:
                     //接收到数据，显示在界面上
                     dialog.dismiss();
                     tvReceiver.append(msg.obj.toString() + "\n");
-                    Log.d("数据帧", "接受");
+                    Log.i("111", index+"\t" + msg.obj.toString());
+                    Log.d("数据帧", "Main-->" + "接受");
                     if (index < (cmd.size() - 1)) {
                         index++;
-                        sendDataByBle(index, "");
+                        sendDataByBle();
                     }
                     break;
                 case 1000:
@@ -152,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
                     if (dialog != null) {
                         dialog.dismiss();
                     }
-                    Log.d("数据帧", "超时");
+                    Log.d("数据帧", "Main-->" + "超时");
                     Toast.makeText(MainActivity.this, "超时请重试!", Toast.LENGTH_SHORT).show();
                     break;
                 case 1111:
@@ -189,11 +190,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    Log.d("开关", "is");
+                    Log.d("开关", "Main-->" + "is");
                     btnScanQR.setVisibility(View.GONE);
                     ((LinearLayout) (findViewById(R.id.inputAddress))).setVisibility(View.VISIBLE);
                 } else {
-                    Log.d("开关", "不is");
+                    Log.d("开关", "Main-->" + "不is");
                     btnScanQR.setVisibility(View.VISIBLE);
                     ((LinearLayout) (findViewById(R.id.inputAddress))).setVisibility(View.GONE);
                 }
@@ -346,8 +347,8 @@ public class MainActivity extends AppCompatActivity {
                             regainBleDataCount = 0;
                             currentRevice = "";
 
-                            sendDataByBle(index, "");
-                            handler.postDelayed(checkConnetRunnable, 3000);
+                            sendDataByBle();
+                            handler.postDelayed(checkConnetRunnable, 1000);
                         } else {
                             Toast.makeText(MainActivity.this, "请输入十六进制指令", Toast.LENGTH_SHORT).show();
                         }
@@ -415,39 +416,42 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onSuccessSend() {
             //数据发送成功
-            Log.e(TAG, "onSuccessSend: ");
+            Log.e(TAG, "Main-->" + "回调发送成功: ");
         }
 
         @Override
 
         public void onDisconnect() {
             //设备断开连接
-            Log.e(TAG, "onDisconnect: ");
+            Log.e(TAG, "Main-->" + "回调断开链接: ");
             Message message = new Message();
             message.what = 1111;
             handler.sendMessage(message);
         }
     };
 
-    private void sendDataByBle(int i, String title) {
-        currentSendOrder = CheckUtils.getFullData((String) cmd.get(i));
-        Log.d("数据帧", "第" + i + "帧---->" + currentSendOrder);
+    private void sendDataByBle() {
+        currentSendOrder = CheckUtils.getFullData((String) cmd.get(index));
+//        Log.d("数据帧", "Main-->" + "第" + i + "帧---->" + currentSendOrder);
+//        Log.i("111", "Main-->" + "第" + index + "帧\t" + regainBleDataCount);
         final boolean[] isSuccess = new boolean[1];
 
         sData = CheckUtils.hex2byte(currentSendOrder);
         mBluetoothGattCharacteristic.setValue(sData);
+        Log.i("111", "发送第" + index+"\t" + cmd.get(index));
         isSuccess[0] = bleConnectUtil.sendData(mBluetoothGattCharacteristic);
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (!isSuccess[0]) {
-                    dialog.dismiss();
-                    handler.sendEmptyMessage(1111);
-                }
-                Log.d("--->", "是否发送成功：" + isSuccess[0]);
-
-            }
-        }, (currentSendOrder.length() / 40 + 1) * 15);
+//        handler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                if (!isSuccess[0]) {
+//                    Log.d("--->", "Main-->" + "好像失败了哦");
+//                    dialog.dismiss();
+//                    handler.sendEmptyMessage(1111);
+//                }
+//                Log.d("--->", "Main-->" + "发送：" + ((isSuccess[0] == true) ? "成功" : "失败"));
+//            }
+//        }, (currentSendOrder.length() / 40 + 1) * 15);
+//        Log.d("--->", "Main-->452");
     }
 
     /**
@@ -457,21 +461,28 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void run() {
             // TODO Auto-generated method stub
+            if (index == cmd.size() - 1) return;
+            sendDataByBle();
+            regainBleDataCount = 0;
+            handler.postDelayed(checkConnetRunnable, 1000);
 
-            Log.d("checkConnetRunnable", "checkConnetRunnable---" + regainBleDataCount + "???" + bleFlag);
-            if (!bleFlag) {
-                //没有在指定时间收到回复
-                if (regainBleDataCount > 2) {
-                    handler.sendEmptyMessage(1000);
-                    Log.d("检测线程", "T");
-                } else {
-                    regainBleDataCount++;
-                    Log.d("检测线程", "F");
-                    handler.postDelayed(checkConnetRunnable, 3000);
-                }
-            }else {
-                sendDataByBle(index,"");
-            }
+//            Log.d("checkConnetRunnable", "Main-->计数器数值" + regainBleDataCount + "\t布尔值" + bleFlag);
+//            if (!bleFlag) {
+//                //没有在指定时间收到回复
+//                if (regainBleDataCount > 2) {
+//                    handler.sendEmptyMessage(1000);
+//                    Log.d("检测线程", "Main-->" + "T");
+//                } else {
+//                    regainBleDataCount++;
+//                    Log.d("检测线程", "Main-->" + "F");
+//                    handler.postDelayed(checkConnetRunnable, 1000);
+//                }
+//            } else {
+//                bleFlag = false;
+//                sendDataByBle(index, "");
+//                regainBleDataCount = 0;
+//                handler.postDelayed(checkConnetRunnable, 1000);
+//            }
         }
     };
 

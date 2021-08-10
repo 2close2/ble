@@ -83,7 +83,7 @@ public class BleConnectUtil {
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     public void bluetoothIsAble(MyBleCallBack myBleCallBack) {
         if (!mBluetoothAdapter.isEnabled()) {
-            Log.d(TAG, "蓝牙不可见");
+            Log.d(TAG, "BleConnectUtil-->" + "蓝牙不可见");
 
             //方法二 推荐
             Intent enable = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
@@ -135,14 +135,14 @@ public class BleConnectUtil {
     public void connectBle(BluetoothDevice device) {
         //获取所需地址
         mDeviceAddress = device.getAddress();
-        Log.e(TAG, "connectBle: " + mDeviceAddress);
+        Log.e(TAG, "BleConnectUtil-->" + "connectBle: " + mDeviceAddress);
         new connectThread().start();
     }
 
     public void connectBle(String device) {
         //获取所需地址
         mDeviceAddress = device;
-        Log.e(TAG, "connectBle: " + mDeviceAddress);
+        Log.e(TAG, "BleConnectUtil-->" + "connectBle: " + mDeviceAddress);
         new connectThread().start();
     }
 
@@ -190,13 +190,13 @@ public class BleConnectUtil {
                 if (mConnected == true) {
                     return true;
                 }
-                Log.e(TAG, "重连");
+                Log.e(TAG, "BleConnectUtil-->" + "重连");
                 mBluetoothGatt.connect();
             } else {
-                Log.e(TAG, "新连接");
+                Log.e(TAG, "BleConnectUtil-->" + "新连接");
                 disConnect(); // 新设备进行连接
                 device = mBluetoothAdapter.getRemoteDevice(mac);
-                Log.e(TAG, "device:" + device);
+                Log.e(TAG, "BleConnectUtil-->" + "device:" + device);
                 if (device == null) {
                     System.out.println("device == null");
                     return false;
@@ -227,7 +227,7 @@ public class BleConnectUtil {
 
     // 断开连接
     public boolean disConnect() {
-        Log.d(TAG, "mBluetoothGatt" + mBluetoothGatt);
+        Log.d(TAG, "BleConnectUtil-->" + "mBluetoothGatt" + mBluetoothGatt);
         if (mBluetoothGatt != null) {
 //            setEnableNotify(BleConnectUtil.mBluetoothGattCharacteristicNotify, false);
             mBluetoothGatt.disconnect();
@@ -264,7 +264,7 @@ public class BleConnectUtil {
             super.onConnectionStateChange(gatt, status, newState);
             // 连接成功
             if (newState == BluetoothProfile.STATE_CONNECTED) {
-                Log.e(TAG, "连接成功");
+                Log.e(TAG, "BleConnectUtil-->" + "连接成功");
                 mConnected = true;
                 mBluetoothAdapter.stopLeScan(mLeScanCallback);
                 System.out.println("STATE_CONNECTED");
@@ -276,7 +276,7 @@ public class BleConnectUtil {
                     mBluetoothGatt.requestMtu(250);
                 }
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                Log.d(TAG, "连接断开");
+                Log.d(TAG, "BleConnectUtil-->" + "连接断开");
                 if (mConnected) {
                     mConnected = false;
                 }
@@ -292,7 +292,7 @@ public class BleConnectUtil {
             super.onServicesDiscovered(gatt, status);
 
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                Log.e(TAG, "发现设备");
+                Log.e(TAG, "BleConnectUtil-->" + "发现设备");
                 System.out.println("onServicesDiscovered");
                 if (work_witch == WORK_onServicesDiscovered) {
                     work_ok_flag = true;
@@ -308,7 +308,7 @@ public class BleConnectUtil {
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
-            Log.e(TAG, "onCharacteristicRead");
+            Log.e(TAG, "BleConnectUtil-->" + "onCharacteristicRead");
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 if (work_witch == WORK_onCharacteristicRead) {
                     work_ok_flag = true;
@@ -324,7 +324,7 @@ public class BleConnectUtil {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
-            Log.e(TAG, "onCharacteristicChanged");
+            Log.e(TAG, "BleConnectUtil-->" + "onCharacteristicChanged");
             if (work_witch == WORK_onCharacteristicChanged) {
                 work_ok_flag = true;
             }
@@ -343,7 +343,7 @@ public class BleConnectUtil {
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicWrite(gatt, characteristic, status);
-            Log.e(TAG, "onCharacteristicWrite");
+            Log.e(TAG, "BleConnectUtil-->" + "onCharacteristicWrite");
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 if (work_witch == WORK_onCharacteristicWrite) {
                     work_ok_flag = true;
@@ -359,7 +359,7 @@ public class BleConnectUtil {
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             super.onDescriptorWrite(gatt, descriptor, status);
-            Log.e(TAG, "onDescriptorWrite");
+            Log.e(TAG, "BleConnectUtil-->" + "onDescriptorWrite");
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 if (work_witch == WORK_onDescriptorWrite) {
                     work_ok_flag = true;
@@ -370,7 +370,7 @@ public class BleConnectUtil {
         @Override
         public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
             super.onReadRemoteRssi(gatt, rssi, status);
-            Log.e(TAG, "onReadRemoteRssi");
+            Log.e(TAG, "BleConnectUtil-->" + "onReadRemoteRssi");
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 if (work_witch == WORK_onReadRemoteRssi) {
                     work_ok_flag = true;
@@ -383,7 +383,7 @@ public class BleConnectUtil {
         @Override
         public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             super.onDescriptorRead(gatt, descriptor, status);
-            Log.e(TAG, "onDescriptorRead");
+            Log.e(TAG, "BleConnectUtil-->" + "onDescriptorRead");
             if ((status == BluetoothGatt.GATT_SUCCESS)
                     && (work_witch == WORK_onDescriptorRead)) {
                 work_ok_flag = true;
@@ -394,10 +394,10 @@ public class BleConnectUtil {
         public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
             super.onMtuChanged(gatt, mtu, status);
             if (BluetoothGatt.GATT_SUCCESS == status) {
-                Log.d("mut", "ok");
+                Log.d("mut", "BleConnectUtil-->" + "ok");
             } else {
 //                LogHelper.log("onMtuChanged fail ");
-                Log.d("mut", "不ok");
+                Log.d("mut", "BleConnectUtil-->" + "不ok");
             }
             mBluetoothGatt.discoverServices();
         }
@@ -410,11 +410,11 @@ public class BleConnectUtil {
         }
         //遍历所有服务
         for (BluetoothGattService BluetoothGattService : gatt.getServices()) {
-            Log.e(TAG, "--->BluetoothGattService" + BluetoothGattService.getUuid().toString());
+            Log.e(TAG, "BleConnectUtil-->" + "--->BluetoothGattService" + BluetoothGattService.getUuid().toString());
 
             //遍历所有特征
             for (BluetoothGattCharacteristic bluetoothGattCharacteristic : BluetoothGattService.getCharacteristics()) {
-                Log.e("---->gattCharacteristic", bluetoothGattCharacteristic.getUuid().toString());
+                Log.e("---->gattCharacteristic", "BleConnectUtil-->" + bluetoothGattCharacteristic.getUuid().toString());
 
                 String str = bluetoothGattCharacteristic.getUuid().toString();
                 if (str.equals(writeCharactUuid)) {
@@ -440,7 +440,7 @@ public class BleConnectUtil {
                 e.printStackTrace();
             }
         }
-        Log.e(TAG, "mConnected" + mConnected);
+        Log.e(TAG, "BleConnectUtil-->" + "mConnected" + mConnected);
         EventBus.getDefault().postSticky(new EventMsg(Constants.BLE_CONNECTION_FINISH_MSG));
     }
 
@@ -715,7 +715,7 @@ public class BleConnectUtil {
             super.handleMessage(msg);
 
             if (msg.what == HANDLE_TIMEOUT) {
-                Log.d(TAG, "超时");
+                Log.d(TAG, "BleConnectUtil-->" + "超时");
                 timeout_flag = true;
                 return;
             }
