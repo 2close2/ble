@@ -138,10 +138,15 @@ public class MainActivity extends AppCompatActivity {
                     //接收到数据，显示在界面上
                     dialog.dismiss();
                     tvReceiver.append(msg.obj.toString() + "\n");
-                    Log.i("111", index+"\t" + msg.obj.toString());
+                    Log.i("1111", index + "\t" + msg.obj.toString());
                     Log.d("数据帧", "Main-->" + "接受");
                     if (index < (cmd.size() - 1)) {
                         index++;
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                         sendDataByBle();
                     }
                     break;
@@ -157,6 +162,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "超时请重试!", Toast.LENGTH_SHORT).show();
                     break;
                 case 1111:
+                    handler.removeCallbacks(checkConnetRunnable);
                     tvBleName.setVisibility(View.GONE);
                     tvReceiver.setText("");
                     edWriteOrder.setText("");
@@ -438,7 +444,7 @@ public class MainActivity extends AppCompatActivity {
 
         sData = CheckUtils.hex2byte(currentSendOrder);
         mBluetoothGattCharacteristic.setValue(sData);
-        Log.i("111", "发送第" + index+"\t" + cmd.get(index));
+        Log.i("1110", "发送第" + index + "\t" + cmd.get(index));
         isSuccess[0] = bleConnectUtil.sendData(mBluetoothGattCharacteristic);
 //        handler.postDelayed(new Runnable() {
 //            @Override
