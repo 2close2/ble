@@ -127,7 +127,8 @@ public class MainActivity extends AppCompatActivity {
                 case 10:
                     //接收到数据，显示在界面上
                     dialog.dismiss();
-                    tvReceiver.append(msg.obj.toString() + "\n");
+                    tvReceiver.setText((index + 1) + "/" + cmd.size());
+//                    tvReceiver.append(msg.obj.toString() + "\n");
                     Log.i("1111", index + "\t" + msg.obj.toString());
                     Log.d("数据帧", "Main-->" + "接受");
                     if (index < (cmd.size() - 1)) {
@@ -140,6 +141,9 @@ public class MainActivity extends AppCompatActivity {
                         sendData();
                         handler.postDelayed(checkConnetRunnable, 5000);
                     }
+//                    if (index == cmd.size()) {
+//
+//                    }
                     break;
                 case 1000:
                     regainBleDataCount = 0;
